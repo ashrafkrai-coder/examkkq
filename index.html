@@ -269,14 +269,18 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
 
 .toggle.on{background:var(--emerald-md)}
 
-/* ── Fit Jana page without scroll on typical screens ── */
-@media(min-height:700px){
-  #page-jana{overflow-y:hidden}
-}
 .card+.card{margin-top:0}
 #page-jana .card{padding:11px}
 #page-jana .gen-btn{margin-top:10px}
 #page-jana #progress-wrap{padding:14px 8px}
+
+/* ── Desktop: allow the shell to grow and the page to scroll naturally ── */
+@media(min-width:640px){
+  html,body{height:auto;min-height:100%;overflow:auto}
+  .app-shell{height:auto;min-height:100dvh;max-width:640px;box-shadow:0 0 40px rgba(0,0,0,0.12);border-left:1px solid var(--gray-md);border-right:1px solid var(--gray-md)}
+  .pages{overflow:visible}
+  .page{position:static;overflow-y:visible}
+}
 </style>
 </head>
 <body>
@@ -738,7 +742,7 @@ async function generate(){
 
   const pL=nPil===3?'أ، ب، ج':'أ، ب، ج، د';
   const tM={mudah:'mudah (asas)',sederhana:'sederhana',sukar:'sukar',campuran:'campuran'};
-  const SYS=`Anda pakar soalan KKQ Tingkatan ${selTkn}. Soalan DAN pilihan MESTI Tulisan Jawi. Sertakan soalan_rumi. Pilihan: ${pL}. JSON SAHAJA.
+  const SYS=`Anda pakar soalan KKQ Tingkatan ${selTkn}. Medan soalan_jawi DAN pilihan MESTI 100% Tulisan Jawi sepenuhnya — JANGAN campurkan sebarang perkataan Rumi/Latin (termasuk istilah teknikal seperti nama hukum tajwid) dalam medan ini; tukar semua istilah kepada ejaan Jawi. Rumi hanya dibenarkan dalam medan soalan_rumi. Pilihan: ${pL}. JSON SAHAJA.
 Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"...","pilihan":{"أ":"...","ب":"...","ج":"...","د":"..."},"jawapan":"أ","tahap":"mudah","penerangan":"..."}]}`;
 
   try{
@@ -746,12 +750,11 @@ Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"..
     if(srcMode==='pdf'){const b64=await toBase64(uploadedFiles.pdf);filePkg={b64,type:'application/pdf',size:uploadedFiles.pdf.size};}
     else if(srcMode==='word'){const b64=await toBase64(uploadedFiles.word);filePkg={b64,type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',size:uploadedFiles.word.size};}
 
-    const batch=20, batches=Math.ceil(total/batch);
-    let no=1;
+    let no=1, batch=20, part=1, firstCall=true;
 
-    for(let b=0;b<batches;b++){
-      const n=Math.min(batch,total-b*batch);
-      const lbl=batches>1?` (Kelompok ${b+1}/${batches})`:'';
+    while(no<=total){
+      const n=Math.min(batch,total-no+1);
+      const lbl=total>batch?` (Kelompok ${part})`:'';
       document.getElementById('prog-msg').innerHTML=`<span class="spin"></span> Jana soalan ${no}–${no+n-1}...`;
       setProg(no-1,total);
 
@@ -759,10 +762,20 @@ Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"..
         ?`Silibus KKQ T${selTkn}:\n\n${content}\n\nJana ${n} soalan Jawi${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. JSON sahaja.`
         :`Jana ${n} soalan KKQ T${selTkn} dari dokumen${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. Jawi. JSON sahaja.`;
 
-      const raw=await callAPI(SYS,msg,b===0?filePkg:null);
-      const p=parseJ(raw);
-      (p.soalan||[]).forEach((q,i)=>curQ.push({...q,no:no+i,_tajuk:p.tajuk||`Bahagian ${b+1}`}));
-      no+=n; setProg(curQ.length,total);
+      try{
+        const raw=await callAPI(SYS,msg,firstCall?filePkg:null);
+        firstCall=false;
+        const p=parseJ(raw);
+        (p.soalan||[]).forEach((q,i)=>curQ.push({...q,no:no+i,_tajuk:p.tajuk||`Bahagian ${part}`}));
+        no+=n; part++; setProg(curQ.length,total);
+      }catch(err){
+        if(batch>5){
+          batch=Math.max(5,Math.floor(batch/2));
+          document.getElementById('prog-msg').innerHTML=`<span class="spin"></span> ${err.message} Cuba semula dengan kelompok lebih kecil (${batch} soalan)...`;
+        } else {
+          throw err;
+        }
+      }
     }
 
     setProg(total,total);
@@ -780,7 +793,7 @@ Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"..
 function setProg(done,total){
   const pct=total>0?Math.round(done/total*100):0;
   document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('prog-label').textContent=done+' / '+total+' soalan';
+  document.getElementById('prog-lbl').textContent=done+' / '+total+' soalan';
 }
 
 // ── Render soalan ──────────────────────────────────────────────────
