@@ -457,15 +457,8 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M8 12h8M12 8v8"/></svg>
           Penyedia AI
         </div>
-        <label class="field-label" for="provider-sel">Pilih API untuk jana soalan</label>
-        <select id="provider-sel" onchange="setProvider(this.value)">
-          <option value="anthropic">Claude AI</option>
-          <option value="gemini">Gemini</option>
-          <option value="qwen">Qwen</option>
-          <option value="openai">ChatGPT</option>
-        </select>
         <div class="api-status api-no" id="provider-status">Kunci API disimpan dengan selamat di pelayan</div>
-        <p class="setting-sub" id="provider-note" style="margin-top:8px">Claude menggunakan model claude-sonnet-4-6.</p>
+        <p class="setting-sub" style="margin-top:8px">Gemini menggunakan model gemini-3.6-flash.</p>
       </div>
 
       <div class="card">
@@ -530,7 +523,7 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
         <div class="setting-row">
           <div>
             <div class="setting-label">Kelas Kemahiran al-Quran</div>
-            <div class="setting-sub">Penjana Soalan Peperiksaan Aneka Pilihan dalam Tulisan Jawi dengan pilihan Claude, Gemini, Qwen atau ChatGPT.</div>
+            <div class="setting-sub">Penjana Soalan Peperiksaan Aneka Pilihan dalam Tulisan Jawi menggunakan Gemini AI.</div>
           </div>
         </div>
         <div class="setting-row">
@@ -553,7 +546,7 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
 <script>
 // ── State ──────────────────────────────────────────────────────────
 let curTab='jana', selTkn=1, curQ=[], showAns=true;
-let settings={jawapan:true,pener:true,tajuk:true,provider:'anthropic'};
+let settings={jawapan:true,pener:true,tajuk:true};
 let deferredPrompt=null;
 
 // ── PWA install ────────────────────────────────────────────────────
@@ -593,12 +586,9 @@ function loadSettings(){
     if(typeof s.jawapan!=='undefined')settings.jawapan=s.jawapan;
     if(typeof s.pener!=='undefined')settings.pener=s.pener;
     if(typeof s.tajuk!=='undefined')settings.tajuk=s.tajuk;
-    if(typeof s.provider==='string')settings.provider=s.provider;
     document.getElementById('tog-jawapan').classList.toggle('on',settings.jawapan);
     document.getElementById('tog-pener').classList.toggle('on',settings.pener);
     document.getElementById('tog-tajuk').classList.toggle('on',settings.tajuk);
-    document.getElementById('provider-sel').value=settings.provider;
-    updateProviderInfo();
   }catch(e){}
 }
 function saveSettings(){
@@ -608,22 +598,6 @@ function toggleSetting(k){
   settings[k]=!settings[k];
   document.getElementById('tog-'+k).classList.toggle('on',settings[k]);
   saveSettings();
-}
-function setProvider(provider){
-  settings.provider=provider;
-  saveSettings();
-  updateProviderInfo();
-  toast('Penyedia AI ditukar kepada '+({anthropic:'Claude',gemini:'Gemini',qwen:'Qwen',openai:'ChatGPT'}[provider]||provider));
-}
-function updateProviderInfo(){
-  const info={
-    anthropic:'Claude menggunakan model claude-sonnet-4-6.',
-    gemini:'Gemini menggunakan model gemini-3.6-flash.',
-    qwen:'Qwen menggunakan model qwen-plus.',
-    openai:'ChatGPT menggunakan model gpt-4.1-mini.'
-  };
-  const note=document.getElementById('provider-note');
-  if(note)note.textContent=info[settings.provider]||info.anthropic;
 }
 loadSettings();
 
@@ -649,7 +623,7 @@ function updBil(v){
 // ── API helper ─────────────────────────────────────────────────────
 async function callAPI(sys,msg){
   const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({provider:settings.provider,system:sys,message:msg,tingkatan:selTkn})});
+    body:JSON.stringify({system:sys,message:msg,tingkatan:selTkn})});
   const d=await res.json();
   if(!res.ok)throw new Error(d.error?.message||'Ralat API');
   return d.text;
@@ -824,7 +798,7 @@ function clearAll(){
   toast('Semua data dipadam');
 }
 
-// ── Export docx — hantar ke Claude ────────────────────────────────
+// ── Export docx ────────────────────────────────────────────────────
 async function exportDocx(){
   if(!curQ.length){toast('Tiada soalan untuk dieksport');return;}
   if(!navigator.onLine){toast('Tiada internet — eksport .docx memerlukan sambungan','red'); return; }
@@ -894,7 +868,7 @@ function showErr(msg){
   document.getElementById('err-box').style.display='flex';
 }
 function showInfo(){
-  alert('Kelas Kemahiran al-Quran (KKQ)\nPenjana Soalan Peperiksaan v2.0\n\nPenyedia AI: Claude, Gemini, Qwen dan ChatGPT\n\nCiri-ciri:\n• Jana soalan dalam Tulisan Jawi\n• Tingkatan 1, 2 & 3\n• Sehingga 60 soalan\n• Eksport .docx & cetak\n• Simpan sesi untuk semak semula\n• Boleh pasang sebagai apl');
+  alert('Kelas Kemahiran al-Quran (KKQ)\nPenjana Soalan Peperiksaan v2.0\n\nPenyedia AI: Gemini\n\nCiri-ciri:\n• Jana soalan dalam Tulisan Jawi\n• Tingkatan 1, 2 & 3\n• Sehingga 60 soalan\n• Eksport .docx & cetak\n• Simpan sesi untuk semak semula\n• Boleh pasang sebagai apl');
 }
 
 updateSavedCount();

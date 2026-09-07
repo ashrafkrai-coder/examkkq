@@ -1,5 +1,5 @@
-// Vercel serverless function — proxies question-generation requests to the
-// selected AI provider so API keys stay server-side only.
+// Vercel serverless function — proxies question-generation requests to
+// Gemini so the API key stays server-side only.
 const TIMEOUT_MS = 50000;
 const TIMEOUT_MSG = 'AI mengambil masa terlalu lama. Sila jana semula; aplikasi akan menggunakan kelompok soalan lebih kecil.';
 
@@ -16,20 +16,6 @@ async function fetchWithTimeout(url, opts) {
   }
 }
 
-async function callAnthropic({ system, message }) {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) throw new Error('Kunci API Claude belum ditetapkan di pelayan.');
-
-  const res = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 8000, system, messages: [{ role: 'user', content: message }] }),
-  });
-  const d = await res.json();
-  if (!res.ok) throw new Error(d.error?.message || 'Ralat API Claude');
-  return (d.content || []).map(c => c.text || '').join('');
-}
-
 async function callGemini({ system, message }) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('Kunci API Gemini belum ditetapkan di pelayan.');
@@ -42,19 +28,6 @@ async function callGemini({ system, message }) {
   const d = await res.json();
   if (!res.ok) throw new Error(d.error?.message || 'Ralat API Gemini');
   return (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
-}
-
-async function callOpenAICompatible({ system, message }, { key, url, model, label }) {
-  if (!key) throw new Error(`Kunci API ${label} belum ditetapkan di pelayan.`);
-
-  const res = await fetchWithTimeout(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
-    body: JSON.stringify({ model, messages: [{ role: 'system', content: system }, { role: 'user', content: message }] }),
-  });
-  const d = await res.json();
-  if (!res.ok) throw new Error(d.error?.message || `Ralat API ${label}`);
-  return d.choices?.[0]?.message?.content || '';
 }
 
 async function fetchReferenceContext(tingkatan) {
@@ -72,35 +45,13 @@ async function fetchReferenceContext(tingkatan) {
   }
 }
 
-const PROVIDERS = {
-  anthropic: callAnthropic,
-  gemini: callGemini,
-  qwen: (p) => callOpenAICompatible(p, {
-    key: process.env.QWEN_API_KEY,
-    url: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions',
-    model: 'qwen-plus',
-    label: 'Qwen',
-  }),
-  openai: (p) => callOpenAICompatible(p, {
-    key: process.env.OPENAI_API_KEY,
-    url: 'https://api.openai.com/v1/chat/completions',
-    model: 'gpt-4.1-mini',
-    label: 'ChatGPT',
-  }),
-};
-
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: { message: 'Method not allowed' } });
     return;
   }
 
-  const { provider, system, message, tingkatan } = req.body || {};
-  const impl = PROVIDERS[provider];
-  if (!impl) {
-    res.status(400).json({ error: { message: 'Penyedia AI tidak sah.' } });
-    return;
-  }
+  const { system, message, tingkatan } = req.body || {};
   if (!message) {
     res.status(400).json({ error: { message: 'Mesej tidak boleh kosong.' } });
     return;
@@ -111,7 +62,7 @@ module.exports = async function handler(req, res) {
     const fullMessage = refCtx
       ? `Rujukan rasmi KKQ (silibus/buku teks) untuk Tingkatan ${tingkatan}:\n${refCtx}\n\nBerdasarkan rujukan di atas, ${message}`
       : message;
-    const text = await impl({ system: system || '', message: fullMessage });
+    const text = await callGemini({ system: system || '', message: fullMessage });
     res.status(200).json({ text });
   } catch (err) {
     res.status(502).json({ error: { message: err.message || 'Ralat pelayan tidak dijangka.' } });
