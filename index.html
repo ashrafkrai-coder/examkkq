@@ -360,9 +360,11 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
 
         <label class="field-label">Tingkatan</label>
         <div class="segment" id="tkn-seg" style="margin-bottom:14px">
-          <button class="seg-btn active" onclick="setTkn(1)">Tingkatan 1</button>
-          <button class="seg-btn" onclick="setTkn(2)">Tingkatan 2</button>
-          <button class="seg-btn" onclick="setTkn(3)">Tingkatan 3</button>
+          <button class="seg-btn active" onclick="setTkn(1)">T1</button>
+          <button class="seg-btn" onclick="setTkn(2)">T2</button>
+          <button class="seg-btn" onclick="setTkn(3)">T3</button>
+          <button class="seg-btn" onclick="setTkn(4)">T4</button>
+          <button class="seg-btn" onclick="setTkn(5)">T5</button>
         </div>
 
         <label class="field-label">Bilangan Soalan: <strong id="bil-lbl" style="color:var(--blue)">60</strong></label>
@@ -868,7 +870,7 @@ function showErr(msg){
   document.getElementById('err-box').style.display='flex';
 }
 function showInfo(){
-  alert('Kelas Kemahiran al-Quran (KKQ)\nPenjana Soalan Peperiksaan v2.0\n\nPenyedia AI: Gemini\n\nCiri-ciri:\n• Jana soalan dalam Tulisan Jawi\n• Tingkatan 1, 2 & 3\n• Sehingga 60 soalan\n• Eksport .docx & cetak\n• Simpan sesi untuk semak semula\n• Boleh pasang sebagai apl');
+  alert('Kelas Kemahiran al-Quran (KKQ)\nPenjana Soalan Peperiksaan v2.0\n\nPenyedia AI: Gemini\n\nCiri-ciri:\n• Jana soalan dalam Tulisan Jawi\n• Tingkatan 1 hingga 5\n• Sehingga 60 soalan\n• Eksport .docx & cetak\n• Simpan sesi untuk semak semula\n• Boleh pasang sebagai apl');
 }
 
 updateSavedCount();
