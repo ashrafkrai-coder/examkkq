@@ -367,6 +367,16 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
           <button class="seg-btn" onclick="setTkn(5)">T5</button>
         </div>
 
+        <label class="field-label" for="bidang-sel">Bidang</label>
+        <select id="bidang-sel" onchange="setBidang(this.value)" style="margin-bottom:14px">
+          <option value="">Semua Bidang</option>
+          <option value="Tajwid">Tajwid</option>
+          <option value="Hafazan">Hafazan</option>
+          <option value="Ulum al-Quran" class="opt-ulum">Ulum al-Quran</option>
+          <option value="Qiraat">Qiraat</option>
+          <option value="Tarannum">Tarannum</option>
+        </select>
+
         <label class="field-label">Bilangan Soalan: <strong id="bil-lbl" style="color:var(--blue)">60</strong></label>
         <div class="slider-row" style="margin-bottom:14px">
           <input type="range" min="10" max="60" value="60" step="10" oninput="updBil(this.value)">
@@ -547,7 +557,7 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
 
 <script>
 // ── State ──────────────────────────────────────────────────────────
-let curTab='jana', selTkn=1, curQ=[], showAns=true;
+let curTab='jana', selTkn=1, selBidang='', curQ=[], showAns=true;
 let settings={jawapan:true,pener:true,tajuk:true};
 let deferredPrompt=null;
 
@@ -616,6 +626,16 @@ function goTab(t){
 function setTkn(n){
   selTkn=n;
   document.querySelectorAll('#tkn-seg .seg-btn').forEach((b,i)=>b.classList.toggle('active',i+1===n));
+  const ulumOpt=document.querySelector('#bidang-sel .opt-ulum');
+  const noUlum=n>=4;
+  ulumOpt.disabled=noUlum;
+  if(noUlum&&selBidang==='Ulum al-Quran'){
+    document.getElementById('bidang-sel').value='';
+    selBidang='';
+  }
+}
+function setBidang(b){
+  selBidang=b;
 }
 function updBil(v){
   document.getElementById('bil-lbl').textContent=v;
@@ -625,7 +645,7 @@ function updBil(v){
 // ── API helper ─────────────────────────────────────────────────────
 async function callAPI(sys,msg){
   const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({system:sys,message:msg,tingkatan:selTkn})});
+    body:JSON.stringify({system:sys,message:msg,tingkatan:selTkn,bidang:selBidang||null})});
   const d=await res.json();
   if(!res.ok)throw new Error(d.error?.message||'Ralat API');
   return d.text;
@@ -662,7 +682,8 @@ Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"..
       document.getElementById('prog-msg').innerHTML=`<span class="spin"></span> Jana soalan ${no}–${no+n-1}...`;
       setProg(no-1,total);
 
-      const msg=`Jana ${n} soalan KKQ Tingkatan ${selTkn}${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. JSON sahaja.`;
+      const bidangTxt=selBidang?` bagi bidang ${selBidang}`:'';
+      const msg=`Jana ${n} soalan KKQ Tingkatan ${selTkn}${bidangTxt}${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. JSON sahaja.`;
 
       try{
         const raw=await callAPI(SYS,msg);

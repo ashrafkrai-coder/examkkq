@@ -30,12 +30,13 @@ async function callGemini({ system, message }) {
   return (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
 }
 
-async function fetchReferenceContext(tingkatan) {
+async function fetchReferenceContext(tingkatan, bidang) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key || !tingkatan) return '';
   try {
-    const q = `${url}/rest/v1/kkq_reference_chunks?select=content,title,kkq_reference_sources!inner(tingkatan,bidang,is_active)&kkq_reference_sources.tingkatan=eq.${tingkatan}&kkq_reference_sources.is_active=eq.true&limit=15`;
+    let q = `${url}/rest/v1/kkq_reference_chunks?select=content,title,kkq_reference_sources!inner(tingkatan,bidang,is_active)&kkq_reference_sources.tingkatan=eq.${encodeURIComponent(tingkatan)}&kkq_reference_sources.is_active=eq.true&limit=15`;
+    if (bidang) q += `&kkq_reference_sources.bidang=eq.${encodeURIComponent(bidang)}`;
     const res = await fetch(q, { headers: { apikey: key, authorization: `Bearer ${key}` } });
     if (!res.ok) return '';
     const rows = await res.json();
@@ -51,16 +52,17 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const { system, message, tingkatan } = req.body || {};
+  const { system, message, tingkatan, bidang } = req.body || {};
   if (!message) {
     res.status(400).json({ error: { message: 'Mesej tidak boleh kosong.' } });
     return;
   }
 
   try {
-    const refCtx = await fetchReferenceContext(tingkatan);
+    const refCtx = await fetchReferenceContext(tingkatan, bidang);
+    const bidangTxt = bidang ? `, bidang ${bidang}` : '';
     const fullMessage = refCtx
-      ? `Rujukan rasmi KKQ (silibus/buku teks) untuk Tingkatan ${tingkatan}:\n${refCtx}\n\nBerdasarkan rujukan di atas, ${message}`
+      ? `Rujukan rasmi KKQ (silibus/buku teks) untuk Tingkatan ${tingkatan}${bidangTxt}:\n${refCtx}\n\nBerdasarkan rujukan di atas, ${message}`
       : message;
     const text = await callGemini({ system: system || '', message: fullMessage });
     res.status(200).json({ text });
