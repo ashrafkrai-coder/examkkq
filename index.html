@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ms" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#1B5E9B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KKQ">
+<meta name="description" content="Penjana Soalan Peperiksaan Kelas Kemahiran al-Quran dalam Tulisan Jawi">
+<title>Kelas Kemahiran al-Quran – Penjana Soalan</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js" defer></script>
+
+<style>
+:root {
+  --blue:    #1B5E9B;
+  --blue-lt: #D6E4F0;
+  --blue-md: #2170B8;
+  --green:   #1A6B3C;
+  --green-lt:#D4EDDA;
+  --amber:   #92600A;
+  --amber-lt:#FFF3CD;
+  --red:     #9B1B1B;
+  --red-lt:  #FDECEA;
+  --gray:    #555;
+  --gray-lt: #F4F4F4;
+  --gray-md: #E0E0E0;
+  --text:    #1A1A1A;
+  --text2:   #555;
+  --white:   #FFFFFF;
+  --radius:  10px;
+  --shadow:  0 2px 12px rgba(0,0,0,0.08);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;font-size:15px;color:var(--text);background:#F0F4F8}
+
+/* ── App shell ── */
+.app-shell{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;background:var(--white);box-shadow:0 0 40px rgba(0,0,0,0.12)}
+
+/* ── Top bar ── */
+.topbar{background:var(--blue);color:var(--white);padding:0;display:flex;flex-direction:column;flex-shrink:0;padding-top:env(safe-area-inset-top)}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.topbar-logo{width:36px;height:36px;background:rgba(255,255,255,0.18);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Noto Naskh Arabic',serif;font-size:20px;color:#fff;font-weight:700}
+.topbar-title{line-height:1.2}
+.topbar-title strong{display:block;font-size:14px;font-weight:600;color:#fff}
+.topbar-title span{font-size:11px;color:rgba(255,255,255,0.75)}
+.topbar-actions{display:flex;gap:6px}
+.icon-btn{width:36px;height:36px;border:none;background:rgba(255,255,255,0.15);border-radius:8px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background 0.15s}
+.icon-btn:hover{background:rgba(255,255,255,0.25)}
+.icon-btn svg{width:18px;height:18px}
+
+/* ── Install banner ── */
+.install-banner{background:var(--amber-lt);border-bottom:1px solid #FBBF24;padding:10px 16px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--amber)}
+.install-banner button{margin-left:auto;padding:5px 12px;background:var(--amber);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500;white-space:nowrap}
+.install-banner.hidden{display:none}
+.offline-bar{background:#374151;color:#fff;text-align:center;font-size:12px;padding:4px;display:none}
+.offline-bar.show{display:block}
+
+/* ── Tab nav ── */
+.tab-nav{display:flex;background:var(--white);border-bottom:1px solid var(--gray-md);flex-shrink:0}
+.tab-item{flex:1;padding:10px 4px 8px;border:none;background:none;font-size:11px;color:var(--text2);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2px solid transparent;transition:all 0.15s;font-family:'Inter',sans-serif}
+.tab-item svg{width:20px;height:20px;opacity:0.6}
+.tab-item.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-item.active svg{opacity:1}
+
+/* ── Pages ── */
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch;display:none;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.page.active{display:block}
+
+/* ── Form elements ── */
+label.field-label{font-size:12px;font-weight:500;color:var(--text2);display:block;margin-bottom:5px}
+textarea,select,input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--gray-md);border-radius:var(--radius);font-size:14px;font-family:'Inter',sans-serif;color:var(--text);background:#fff;outline:none;transition:border 0.15s}
+textarea:focus,select:focus,input:focus{border-color:var(--blue)}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+
+/* ── Cards ── */
+.card{background:#fff;border:1px solid var(--gray-md);border-radius:12px;padding:14px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.card-title svg{width:16px;height:16px;color:var(--blue)}
+
+/* ── Segment control ── */
+.segment{display:flex;background:var(--gray-lt);border-radius:8px;padding:3px;gap:2px;margin-bottom:12px}
+.seg-btn{flex:1;padding:7px 4px;border:none;background:none;border-radius:6px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:'Inter',sans-serif}
+.seg-btn.active{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,0.12)}
+
+/* ── Upload zone ── */
+.upload-zone{border:1.5px dashed var(--gray-md);border-radius:var(--radius);padding:20px 16px;text-align:center;cursor:pointer;background:var(--gray-lt);transition:all 0.15s;position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--blue);background:var(--blue-lt)}
+.upload-zone svg{width:28px;height:28px;color:var(--text2);margin-bottom:6px}
+.upload-zone p{font-size:13px;color:var(--text2);margin-bottom:2px}
+.upload-zone span{font-size:11px;color:#999}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file-chip{display:flex;align-items:center;gap:8px;background:var(--green-lt);border:1px solid #86EFAC;border-radius:8px;padding:8px 12px;font-size:12px;color:var(--green);margin-top:8px}
+.file-chip svg{width:14px;height:14px;flex-shrink:0}
+
+/* ── Slider ── */
+.slider-row{display:flex;align-items:center;gap:10px}
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:var(--gray-md);border-radius:2px;outline:none}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--blue);border-radius:50%;cursor:pointer}
+.slider-val{font-size:15px;font-weight:600;color:var(--blue);min-width:28px;text-align:right}
+
+/* ── Generate button ── */
+.gen-btn{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s;margin-top:16px}
+.gen-btn:hover:not(:disabled){opacity:0.88}
+.gen-btn:disabled{opacity:0.5;cursor:not-allowed}
+.gen-btn svg{width:18px;height:18px}
+
+/* ── Progress ── */
+.progress-wrap{text-align:center;padding:24px 16px}
+.progress-wrap p{font-size:13px;color:var(--text2);margin-bottom:12px}
+.progress-bar{height:6px;background:var(--gray-lt);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:var(--blue);border-radius:3px;transition:width 0.4s ease;width:0%}
+.progress-label{font-size:11px;color:#999;margin-top:6px}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:-3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Soalan results ── */
+.result-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.result-info strong{font-size:14px;color:var(--text)}
+.result-info span{font-size:11px;color:var(--text2);display:block;margin-top:1px}
+.action-row{display:flex;gap:6px;flex-wrap:wrap}
+.act-btn{padding:7px 12px;border:1px solid var(--gray-md);border-radius:8px;background:#fff;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:'Inter',sans-serif;transition:all 0.15s}
+.act-btn:hover:not(:disabled){background:var(--gray-lt)}
+.act-btn:disabled{opacity:0.5;cursor:not-allowed}
+.act-btn svg{width:14px;height:14px}
+.act-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.act-btn.primary:hover:not(:disabled){opacity:0.88}
+
+.section-hd{background:var(--blue);color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+.section-hd svg{width:14px;height:14px}
+
+.q-card{background:#fff;border:1px solid var(--gray-md);border-radius:12px;padding:14px;margin-bottom:8px}
+.q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.q-no{font-size:11px;font-weight:600;color:#999}
+.q-badge{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500}
+.badge-m{background:var(--green-lt);color:var(--green)}
+.badge-s{background:var(--amber-lt);color:var(--amber)}
+.badge-t{background:var(--red-lt);color:var(--red)}
+.q-jawi{font-family:'Noto Naskh Arabic',serif;font-size:17px;line-height:1.8;direction:rtl;text-align:right;color:var(--text);margin-bottom:4px}
+.q-rumi{font-size:11px;color:#999;font-style:italic;margin-bottom:10px;line-height:1.4}
+.opts{display:flex;flex-direction:column;gap:5px}
+.opt{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:8px;background:var(--gray-lt);border:1px solid var(--gray-md);font-family:'Noto Naskh Arabic',serif;font-size:14px;direction:rtl;line-height:1.5}
+.opt.correct{background:var(--green-lt);border-color:#86EFAC}
+.opt.correct .opt-key{color:var(--green)}
+.opt-key{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#999;flex-shrink:0;direction:ltr;margin-top:1px}
+.pener{margin-top:8px;padding:7px 10px;background:var(--blue-lt);border-radius:8px;font-size:11px;color:var(--blue);line-height:1.5;display:flex;gap:6px}
+.pener svg{width:12px;height:12px;flex-shrink:0;margin-top:1px}
+
+/* ── Saved page ── */
+.saved-empty{text-align:center;padding:40px 20px;color:var(--text2)}
+.saved-empty svg{width:48px;height:48px;color:var(--gray-md);margin-bottom:12px}
+.saved-item{background:#fff;border:1px solid var(--gray-md);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all 0.15s}
+.saved-item:hover{border-color:var(--blue);background:var(--blue-lt)}
+.saved-item-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.saved-item-meta{font-size:11px;color:#999;display:flex;gap:8px;flex-wrap:wrap}
+.saved-item-meta span{display:flex;align-items:center;gap:3px}
+.saved-actions{display:flex;gap:6px;margin-top:10px}
+
+/* ── Settings page ── */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray-lt)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:13px;color:var(--text)}
+.setting-sub{font-size:11px;color:#999;margin-top:2px}
+.toggle{width:44px;height:24px;background:var(--gray-md);border-radius:12px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;border:none}
+.toggle.on{background:var(--blue)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.toggle.on::after{transform:translateX(20px)}
+.api-input-row{margin-top:8px}
+.api-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:99px;margin-top:6px}
+.api-ok{background:var(--green-lt);color:var(--green)}
+.api-no{background:var(--gray-lt);color:#999}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:10px 18px;border-radius:99px;font-size:13px;font-weight:500;white-space:nowrap;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;display:flex;align-items:center;gap:6px;max-width:90vw}
+.toast.show{opacity:1}
+.toast svg{width:14px;height:14px;flex-shrink:0}
+.toast.green{background:var(--green)}
+.toast.red{background:var(--red)}
+
+/* ── Error ── */
+.err-box{background:var(--red-lt);border:1px solid #FCA5A5;border-radius:var(--radius);padding:12px;font-size:13px;color:var(--red);display:flex;gap:8px;align-items:flex-start;margin-bottom:12px}
+.err-box svg{width:16px;height:16px;flex-shrink:0;margin-top:1px}
+
+/* ── Responsive desktop ── */
+@media(min-width:500px){
+  body{background:#E8EEF4}
+  .app-shell{border-radius:16px;margin:20px auto;height:calc(100dvh - 40px);max-height:860px}
+}
+
+/* ── Visual refresh ── */
+:root{--blue:#243A73;--blue-md:#36559E;--blue-lt:#E8EDFF;--green:#13795B;--amber:#A35C0A;--text:#172033;--text2:#667085;--gray-md:#E4E7EC;--gray-lt:#F7F8FC;--radius:16px}
+html,body{background:#EEF1FA}
+.app-shell{background:#F9FAFF;box-shadow:0 22px 70px rgba(31,48,105,.16)}
+.topbar{background:linear-gradient(135deg,#172A58,#375AAB)}
+.topbar-inner{padding:16px 18px}.topbar-logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#F6C55F,#E58A38);box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.topbar-title strong{font-size:15px}.topbar-title span{font-size:11px}.icon-btn{border-radius:12px}
+.tab-nav{margin:0 12px;border:1px solid #E7EAF4;border-radius:0 0 16px 16px;box-shadow:0 4px 12px rgba(28,44,92,.05)}
+.tab-item{padding:11px 4px 9px;border-bottom:2px solid transparent}.tab-item.active{color:var(--blue);border-bottom-color:#F2A23A}
+.page{padding:18px}.card{border:1px solid #E7EAF4;border-radius:18px;padding:16px;box-shadow:0 8px 22px rgba(29,45,92,.055);margin-bottom:14px}
+.card-title{font-size:14px}.segment{padding:4px;border-radius:12px;background:#F2F4FA}.seg-btn{border-radius:9px;padding:9px 5px}.seg-btn.active{color:var(--blue);box-shadow:0 3px 10px rgba(39,58,115,.12)}
+textarea,select,input[type=text]{border-color:#E0E5F1;border-radius:12px;padding:12px;background:#FCFCFF}.upload-zone{border-radius:14px;background:#FAFBFF;border-color:#CDD6F0}
+.gen-btn{border-radius:16px;padding:16px;background:linear-gradient(135deg,#243A73,#4268C4);box-shadow:0 12px 22px rgba(43,72,157,.25)}
+.welcome-banner{padding:18px;border-radius:18px;color:#fff;background:radial-gradient(circle at 92% 12%,rgba(245,190,83,.75),transparent 24%),linear-gradient(135deg,#243A73,#4268C4);margin-bottom:14px;box-shadow:0 10px 24px rgba(36,58,115,.18)}
+.welcome-banner .eyebrow{font-size:11px;letter-spacing:.1em;font-weight:700;text-transform:uppercase;color:#F7CF78}.welcome-banner h1{font-size:20px;margin:5px 0 6px;line-height:1.2}.welcome-banner p{font-size:12px;line-height:1.55;color:#E7ECFF}.q-card,.saved-item{border-color:#E6E9F2;border-radius:16px;box-shadow:0 5px 15px rgba(35,50,92,.04)}
+.section-hd{border-radius:12px;background:linear-gradient(135deg,#243A73,#4268C4)}.act-btn{border-radius:10px}.act-btn.primary{background:var(--blue);border-color:var(--blue)}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-brand">
+        <div class="topbar-logo">ق</div>
+        <div class="topbar-title">
+          <strong>Kelas Kemahiran al-Quran</strong>
+          <span>Penjana Soalan Peperiksaan</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" onclick="showInfo()" title="Maklumat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Install banner -->
+  <div class="install-banner hidden" id="install-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <span>Pasang aplikasi ini pada peranti anda</span>
+    <button onclick="installApp()">Pasang</button>
+  </div>
+
+  <!-- Offline bar -->
+  <div class="offline-bar" id="offline-bar">Tiada sambungan internet — beberapa fungsi tidak tersedia</div>
+
+  <!-- Tab nav -->
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-item active" onclick="goTab('jana')" role="tab" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Jana
+    </button>
+    <button class="tab-item" onclick="goTab('soalan')" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Soalan
+    </button>
+    <button class="tab-item" onclick="goTab('simpan')" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Simpan
+    </button>
+    <button class="tab-item" onclick="goTab('tetapan')" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Tetapan
+    </button>
+  </nav>
+
+  <!-- Pages -->
+  <div class="pages">
+
+    <!-- ── JANA PAGE ── -->
+    <div class="page active" id="page-jana">
+      <div id="err-box" class="err-box" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="err-msg"></span>
+      </div>
+
+      <section class="welcome-banner">
+        <div class="eyebrow">Exam KKQ · AI Assistant</div>
+        <h1>Bina set soalan dengan lebih pantas.</h1>
+        <p>Tampal silibus atau muat naik modul, tetapkan aras dan terus jana soalan Jawi yang sedia disemak.</p>
+      </section>
+
+      <!-- Input source -->
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Sumber Silibus / Modul
+        </div>
+        <div class="segment" id="src-seg">
+          <button class="seg-btn active" onclick="setSrc('teks')">Teks</button>
+          <button class="seg-btn" onclick="setSrc('pdf')">PDF</button>
+          <button class="seg-btn" onclick="setSrc('word')">Word</button>
+        </div>
+        <div id="src-teks">
+          <label class="field-label">Tampal kandungan silibus</label>
+          <textarea id="teks-in" placeholder="Contoh:&#10;Tajuk 1: Hukum Tajwid&#10;- Nun Sakinah (Izhar, Idgham, Iqlab, Ikhfa)&#10;- Mim Sakinah&#10;&#10;Tajuk 2: Makhraj Huruf..."></textarea>
+        </div>
+        <div id="src-pdf" style="display:none">
+          <div class="upload-zone" id="pdf-zone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <p>Ketik atau seret fail PDF</p>
+            <span>Modul atau silibus • maks 3MB</span>
+            <input type="file" accept=".pdf" onchange="handleFile(this,'pdf')">
+          </div>
+          <div class="file-chip" id="pdf-chip" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="pdf-name"></span>
+          </div>
+        </div>
+        <div id="src-word" style="display:none">
+          <div class="upload-zone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>Ketik atau seret fail Word</p>
+            <span>.docx • maks 3MB</span>
+            <input type="file" accept=".docx,.doc" onchange="handleFile(this,'word')">
+          </div>
+          <div class="file-chip" id="word-chip" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="word-name"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Tetapan Soalan
+        </div>
+
+        <label class="field-label">Tingkatan</label>
+        <div class="segment" id="tkn-seg" style="margin-bottom:14px">
+          <button class="seg-btn active" onclick="setTkn(1)">Tingkatan 1</button>
+          <button class="seg-btn" onclick="setTkn(2)">Tingkatan 2</button>
+          <button class="seg-btn" onclick="setTkn(3)">Tingkatan 3</button>
+        </div>
+
+        <label class="field-label">Bilangan Soalan: <strong id="bil-lbl" style="color:var(--blue)">60</strong></label>
+        <div class="slider-row" style="margin-bottom:14px">
+          <input type="range" min="10" max="60" value="60" step="10" oninput="updBil(this.value)">
+          <span class="slider-val" id="bil-val">60</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label class="field-label">Tahap Kesukaran</label>
+            <select id="tahap-sel">
+              <option value="mudah">Mudah</option>
+              <option value="sederhana" selected>Sederhana</option>
+              <option value="sukar">Sukar</option>
+              <option value="campuran">Campuran</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Bilangan Pilihan</label>
+            <select id="pilihan-sel">
+              <option value="3">3 Pilihan</option>
+              <option value="4" selected>4 Pilihan</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button class="gen-btn" id="gen-btn" onclick="generate()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Jana <span id="btn-lbl">60</span> Soalan
+      </button>
+
+      <!-- Progress -->
+      <div id="progress-wrap" class="progress-wrap" style="display:none">
+        <p id="prog-msg"><span class="spin"></span> Menjana soalan...</p>
+        <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+        <div class="progress-label" id="prog-lbl">0 / 0 soalan</div>
+      </div>
+    </div>
+
+    <!-- ── SOALAN PAGE ── -->
+    <div class="page" id="page-soalan">
+      <div id="soalan-empty" style="text-align:center;padding:48px 20px;color:var(--text2)">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--gray-md);margin-bottom:12px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <p style="font-size:14px;font-weight:500">Belum ada soalan</p>
+        <p style="font-size:12px;margin-top:4px">Jana soalan dahulu di tab Jana</p>
+      </div>
+      <div id="soalan-content" style="display:none">
+        <div class="result-bar">
+          <div class="result-info">
+            <strong id="result-title">0 Soalan</strong>
+            <span id="result-meta"></span>
+          </div>
+        </div>
+        <div class="action-row" style="margin-bottom:14px">
+          <button class="act-btn" onclick="toggleAns()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span id="ans-lbl">Sembunyi Jawapan</span>
+          </button>
+          <button class="act-btn primary" onclick="exportDocx()" id="docx-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Eksport .docx
+          </button>
+          <button class="act-btn" onclick="saveSession()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Simpan
+          </button>
+          <button class="act-btn" onclick="printQ()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Cetak
+          </button>
+        </div>
+        <div id="q-list"></div>
+      </div>
+    </div>
+
+    <!-- ── SIMPAN PAGE ── -->
+    <div class="page" id="page-simpan">
+      <div id="saved-empty" class="saved-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <p style="font-size:14px;font-weight:500;margin-bottom:4px">Tiada sesi tersimpan</p>
+        <p style="font-size:12px">Jana dan simpan soalan untuk akses semula</p>
+      </div>
+      <div id="saved-list"></div>
+    </div>
+
+    <!-- ── TETAPAN PAGE ── -->
+    <div class="page" id="page-tetapan">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M8 12h8M12 8v8"/></svg>
+          Penyedia AI
+        </div>
+        <label class="field-label" for="provider-sel">Pilih API untuk jana soalan</label>
+        <select id="provider-sel" onchange="setProvider(this.value)">
+          <option value="anthropic">Claude AI</option>
+          <option value="gemini">Gemini</option>
+          <option value="qwen">Qwen</option>
+          <option value="openai">ChatGPT</option>
+        </select>
+        <div class="api-status api-no" id="provider-status">Kunci API disimpan dengan selamat di pelayan</div>
+        <p class="setting-sub" id="provider-note" style="margin-top:8px">Claude menggunakan model claude-sonnet-4-6.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Aplikasi
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Versi Aplikasi</div>
+            <div class="setting-sub">KKQ PWA v1.0.0</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Tunjukkan Jawapan Lalai</div>
+            <div class="setting-sub">Jawapan ditanda hijau secara lalai</div>
+          </div>
+          <button class="toggle on" id="tog-jawapan" onclick="toggleSetting('jawapan')"></button>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Tunjukkan Penerangan</div>
+            <div class="setting-sub">Penerangan setiap soalan</div>
+          </div>
+          <button class="toggle on" id="tog-pener" onclick="toggleSetting('pener')"></button>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Susun Ikut Tajuk</div>
+            <div class="setting-sub">Bahagikan soalan mengikut tajuk</div>
+          </div>
+          <button class="toggle on" id="tog-tajuk" onclick="toggleSetting('tajuk')"></button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          Data
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Sesi Tersimpan</div>
+            <div class="setting-sub" id="saved-count-lbl">0 sesi</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Padam Semua Data</div>
+            <div class="setting-sub">Padam semua sesi tersimpan</div>
+          </div>
+          <button class="act-btn" style="color:var(--red);border-color:#FCA5A5" onclick="clearAll()">Padam</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          Perihal
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Kelas Kemahiran al-Quran</div>
+            <div class="setting-sub">Penjana Soalan Peperiksaan Aneka Pilihan dalam Tulisan Jawi dengan pilihan Claude, Gemini, Qwen atau ChatGPT.</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Privasi Kunci API</div>
+            <div class="setting-sub">Kunci API tidak disimpan pada telefon atau dihantar kepada pengguna aplikasi.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /pages -->
+</div><!-- /app-shell -->
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="toast-icon"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────
+let curTab='jana', srcMode='teks', selTkn=1, curQ=[], showAns=true;
+let uploadedFiles={pdf:null,word:null};
+let settings={jawapan:true,pener:true,tajuk:true,provider:'anthropic'};
+let deferredPrompt=null;
+
+// ── PWA install ────────────────────────────────────────────────────
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault(); deferredPrompt=e;
+  document.getElementById('install-banner').classList.remove('hidden');
+});
+window.addEventListener('appinstalled', ()=>{
+  document.getElementById('install-banner').classList.add('hidden');
+  toast('Aplikasi berjaya dipasang!','green');
+});
+async function installApp(){
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  const r=await deferredPrompt.userChoice;
+  if(r.outcome==='accepted')toast('Terima kasih kerana memasang KKQ!','green');
+  deferredPrompt=null;
+}
+
+// ── Offline detection ──────────────────────────────────────────────
+function updateOnline(){
+  document.getElementById('offline-bar').classList.toggle('show',!navigator.onLine);
+}
+window.addEventListener('online',updateOnline);
+window.addEventListener('offline',updateOnline);
+updateOnline();
+
+// ── Service Worker ─────────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+// ── Load settings from localStorage ───────────────────────────────
+function loadSettings(){
+  try{
+    const s=JSON.parse(localStorage.getItem('kkq-settings')||'{}');
+    if(typeof s.jawapan!=='undefined')settings.jawapan=s.jawapan;
+    if(typeof s.pener!=='undefined')settings.pener=s.pener;
+    if(typeof s.tajuk!=='undefined')settings.tajuk=s.tajuk;
+    if(typeof s.provider==='string')settings.provider=s.provider;
+    document.getElementById('tog-jawapan').classList.toggle('on',settings.jawapan);
+    document.getElementById('tog-pener').classList.toggle('on',settings.pener);
+    document.getElementById('tog-tajuk').classList.toggle('on',settings.tajuk);
+    document.getElementById('provider-sel').value=settings.provider;
+    updateProviderInfo();
+  }catch(e){}
+}
+function saveSettings(){
+  localStorage.setItem('kkq-settings',JSON.stringify(settings));
+}
+function toggleSetting(k){
+  settings[k]=!settings[k];
+  document.getElementById('tog-'+k).classList.toggle('on',settings[k]);
+  saveSettings();
+}
+function setProvider(provider){
+  settings.provider=provider;
+  saveSettings();
+  updateProviderInfo();
+  toast('Penyedia AI ditukar kepada '+({anthropic:'Claude',gemini:'Gemini',qwen:'Qwen',openai:'ChatGPT'}[provider]||provider));
+}
+function updateProviderInfo(){
+  const info={
+    anthropic:'Claude menggunakan model claude-sonnet-4-6.',
+    gemini:'Gemini menggunakan model gemini-2.5-flash.',
+    qwen:'Qwen menggunakan model qwen-plus.',
+    openai:'ChatGPT menggunakan model gpt-4.1-mini.'
+  };
+  const note=document.getElementById('provider-note');
+  if(note)note.textContent=info[settings.provider]||info.anthropic;
+}
+loadSettings();
+
+// ── Navigation ─────────────────────────────────────────────────────
+function goTab(t){
+  curTab=t;
+  document.querySelectorAll('.tab-item').forEach((el,i)=>el.classList.toggle('active',['jana','soalan','simpan','tetapan'][i]===t));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+t).classList.add('active');
+  if(t==='simpan')renderSaved();
+  if(t==='tetapan')updateSavedCount();
+}
+
+// ── Input source ───────────────────────────────────────────────────
+function setSrc(m){
+  srcMode=m;
+  ['teks','pdf','word'].forEach((s,i)=>{
+    document.querySelectorAll('#src-seg .seg-btn')[i].classList.toggle('active',s===m);
+    document.getElementById('src-'+s).style.display=s===m?'block':'none';
+  });
+}
+function setTkn(n){
+  selTkn=n;
+  document.querySelectorAll('#tkn-seg .seg-btn').forEach((b,i)=>b.classList.toggle('active',i+1===n));
+}
+function updBil(v){
+  document.getElementById('bil-lbl').textContent=v;
+  document.getElementById('bil-val').textContent=v;
+  document.getElementById('btn-lbl').textContent=v;
+}
+function handleFile(input,type){
+  const f=input.files[0];if(!f)return;
+  if(f.size>3*1024*1024){showErr('Fail melebihi had 3MB. Sila pilih fail yang lebih kecil.');input.value='';return;}
+  uploadedFiles[type]=f;
+  document.getElementById(type+'-chip').style.display='flex';
+  document.getElementById(type+'-name').textContent=f.name+' ('+(f.size/1024).toFixed(1)+' KB)';
+}
+
+// ── API helper ─────────────────────────────────────────────────────
+async function toBase64(file){
+  return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
+}
+async function callAPI(sys,msg,filePkg){
+  const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({provider:settings.provider,system:sys,message:msg,file:filePkg?{base64:filePkg.b64,mediaType:filePkg.type,size:filePkg.size}:null})});
+  const d=await res.json();
+  if(!res.ok)throw new Error(d.error?.message||'Ralat API');
+  return d.text;
+}
+function parseJ(raw){
+  const c=raw.replace(/```json|```/g,'').trim();
+  try{return JSON.parse(c);}catch{const m=c.match(/\{[\s\S]*\}/);if(m)return JSON.parse(m[0]);throw new Error('Format tidak sah');}
+}
+
+// ── Generate ───────────────────────────────────────────────────────
+async function generate(){
+  const total=parseInt(document.querySelector('.slider-row input').value);
+  const tahap=document.getElementById('tahap-sel').value;
+  const nPil=parseInt(document.getElementById('pilihan-sel').value);
+
+  // Validate input
+  let content='';
+  if(srcMode==='teks'){
+    content=document.getElementById('teks-in').value.trim();
+    if(!content){showErr('Sila masukkan kandungan silibus terlebih dahulu.');return;}
+  } else if(srcMode==='pdf'&&!uploadedFiles.pdf){showErr('Sila muat naik fail PDF.');return;}
+  else if(srcMode==='word'&&!uploadedFiles.word){showErr('Sila muat naik fail Word.');return;}
+  if(!navigator.onLine){showErr('Tiada sambungan internet. Sambungkan internet untuk jana soalan.');return;}
+
+  document.getElementById('err-box').style.display='none';
+  document.getElementById('gen-btn').disabled=true;
+  document.getElementById('progress-wrap').style.display='block';
+  curQ=[];
+
+  const pL=nPil===3?'أ، ب، ج':'أ، ب، ج، د';
+  const tM={mudah:'mudah (asas)',sederhana:'sederhana',sukar:'sukar',campuran:'campuran'};
+  const SYS=`Anda pakar soalan KKQ Tingkatan ${selTkn}. Soalan DAN pilihan MESTI Tulisan Jawi. Sertakan soalan_rumi. Pilihan: ${pL}. JSON SAHAJA.
+Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"...","pilihan":{"أ":"...","ب":"...","ج":"...","د":"..."},"jawapan":"أ","tahap":"mudah","penerangan":"..."}]}`;
+
+  try{
+    let filePkg=null;
+    if(srcMode==='pdf'){const b64=await toBase64(uploadedFiles.pdf);filePkg={b64,type:'application/pdf',size:uploadedFiles.pdf.size};}
+    else if(srcMode==='word'){const b64=await toBase64(uploadedFiles.word);filePkg={b64,type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',size:uploadedFiles.word.size};}
+
+    const batch=20, batches=Math.ceil(total/batch);
+    let no=1;
+
+    for(let b=0;b<batches;b++){
+      const n=Math.min(batch,total-b*batch);
+      const lbl=batches>1?` (Kelompok ${b+1}/${batches})`:'';
+      document.getElementById('prog-msg').innerHTML=`<span class="spin"></span> Jana soalan ${no}–${no+n-1}...`;
+      setProg(no-1,total);
+
+      const msg=content
+        ?`Silibus KKQ T${selTkn}:\n\n${content}\n\nJana ${n} soalan Jawi${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. JSON sahaja.`
+        :`Jana ${n} soalan KKQ T${selTkn} dari dokumen${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. Jawi. JSON sahaja.`;
+
+      const raw=await callAPI(SYS,msg,b===0?filePkg:null);
+      const p=parseJ(raw);
+      (p.soalan||[]).forEach((q,i)=>curQ.push({...q,no:no+i,_tajuk:p.tajuk||`Bahagian ${b+1}`}));
+      no+=n; setProg(curQ.length,total);
+    }
+
+    setProg(total,total);
+    renderSoalan(nPil);
+    goTab('soalan');
+    toast(`${curQ.length} soalan berjaya dijana!`,'green');
+
+  }catch(err){showErr('Ralat: '+err.message);}
+  finally{
+    document.getElementById('gen-btn').disabled=false;
+    document.getElementById('progress-wrap').style.display='none';
+  }
+}
+
+function setProg(done,total){
+  const pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-label').textContent=done+' / '+total+' soalan';
+}
+
+// ── Render soalan ──────────────────────────────────────────────────
+function renderSoalan(nPil){
+  nPil=nPil||parseInt(document.getElementById('pilihan-sel').value)||4;
+  const pKeys=nPil===3?['أ','ب','ج']:['أ','ب','ج','د'];
+  const tarikh=new Date().toLocaleDateString('ms-MY',{day:'2-digit',month:'long',year:'numeric'});
+
+  document.getElementById('soalan-empty').style.display='none';
+  document.getElementById('soalan-content').style.display='block';
+  document.getElementById('result-title').textContent=`${curQ.length} Soalan Aneka Pilihan`;
+  document.getElementById('result-meta').textContent=`KKQ Tingkatan ${selTkn} • ${tarikh}`;
+  showAns=settings.jawapan;
+  document.getElementById('ans-lbl').textContent=showAns?'Sembunyi Jawapan':'Tunjuk Jawapan';
+
+  let html=''; let lastT='';
+  curQ.forEach(q=>{
+    if(settings.tajuk&&q._tajuk&&q._tajuk!==lastT){
+      html+=`<div class="section-hd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>${q._tajuk}</div>`;
+      lastT=q._tajuk;
+    }
+    const dc=q.tahap==='mudah'?'badge-m':q.tahap==='sukar'?'badge-t':'badge-s';
+    const dl=q.tahap==='mudah'?'Mudah':q.tahap==='sukar'?'Sukar':'Sederhana';
+    html+=`<div class="q-card">
+      <div class="q-header"><span class="q-no">Soalan ${q.no}</span>${q.tahap?`<span class="q-badge ${dc}">${dl}</span>`:''}</div>
+      <div class="q-jawi">${q.soalan_jawi||''}</div>
+      <div class="q-rumi">${q.soalan_rumi||''}</div>
+      <div class="opts">`;
+    pKeys.forEach(k=>{
+      if(q.pilihan&&q.pilihan[k]){
+        const cor=showAns&&q.jawapan===k;
+        html+=`<div class="opt${cor?' correct':''}"><span class="opt-key">${k}</span><span>${q.pilihan[k]}</span></div>`;
+      }
+    });
+    html+=`</div>`;
+    if(settings.pener&&q.penerangan)html+=`<div class="pener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>${q.penerangan}</span></div>`;
+    html+=`</div>`;
+  });
+  document.getElementById('q-list').innerHTML=html;
+}
+
+function toggleAns(){
+  showAns=!showAns;
+  document.getElementById('ans-lbl').textContent=showAns?'Sembunyi Jawapan':'Tunjuk Jawapan';
+  document.querySelectorAll('.opt').forEach(el=>{
+    const isC=el.dataset.c||el.classList.contains('correct');
+    if(!showAns){if(el.classList.contains('correct')){el.dataset.c='1';el.classList.remove('correct');}}
+    else{if(el.dataset.c){el.classList.add('correct');delete el.dataset.c;}}
+  });
+}
+
+// ── Save / Load sessions ───────────────────────────────────────────
+function saveSession(){
+  if(!curQ.length){toast('Tiada soalan untuk disimpan');return;}
+  const tarikh=new Date().toISOString();
+  const sesi={id:Date.now(),tarikh,tingkatan:selTkn,jumlah:curQ.length,soalan:curQ};
+  const all=getSaved();all.push(sesi);
+  localStorage.setItem('kkq-sessions',JSON.stringify(all));
+  toast('Sesi berjaya disimpan!','green');
+  updateSavedCount();
+}
+function getSaved(){try{return JSON.parse(localStorage.getItem('kkq-sessions')||'[]');}catch{return[];}}
+function updateSavedCount(){
+  const n=getSaved().length;
+  document.getElementById('saved-count-lbl').textContent=n+' sesi';
+}
+function renderSaved(){
+  const all=getSaved();
+  document.getElementById('saved-empty').style.display=all.length?'none':'block';
+  if(!all.length){document.getElementById('saved-list').innerHTML='';return;}
+  let html='';
+  all.slice().reverse().forEach(s=>{
+    const d=new Date(s.tarikh).toLocaleDateString('ms-MY',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    html+=`<div class="saved-item" onclick="loadSession(${s.id})">
+      <div class="saved-item-title">KKQ Tingkatan ${s.tingkatan} — ${s.jumlah} Soalan</div>
+      <div class="saved-item-meta"><span>${d}</span></div>
+      <div class="saved-actions" onclick="event.stopPropagation()">
+        <button class="act-btn" onclick="loadSession(${s.id})">Buka</button>
+        <button class="act-btn" style="color:var(--red)" onclick="deleteSession(${s.id})">Padam</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('saved-list').innerHTML=html;
+}
+function loadSession(id){
+  const s=getSaved().find(x=>x.id===id);
+  if(!s)return;
+  curQ=s.soalan; selTkn=s.tingkatan;
+  renderSoalan();
+  goTab('soalan');
+  toast('Sesi dimuatkan','green');
+}
+function deleteSession(id){
+  const all=getSaved().filter(x=>x.id!==id);
+  localStorage.setItem('kkq-sessions',JSON.stringify(all));
+  renderSaved(); updateSavedCount();
+  toast('Sesi dipadam');
+}
+function clearAll(){
+  if(!confirm('Padam semua sesi tersimpan?'))return;
+  localStorage.removeItem('kkq-sessions');
+  renderSaved(); updateSavedCount();
+  toast('Semua data dipadam');
+}
+
+// ── Export docx — hantar ke Claude ────────────────────────────────
+async function exportDocx(){
+  if(!curQ.length){toast('Tiada soalan untuk dieksport');return;}
+  if(!navigator.onLine){toast('Tiada internet — eksport .docx memerlukan sambungan','red'); return; }
+  const btn=document.getElementById('docx-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spin" style="border-color:rgba(255,255,255,0.4);border-top-color:#fff"></span> Jana...';
+  toast('Menjana fail Word...','');
+  try{
+    if(!window.docx)throw new Error('Komponen Word masih dimuatkan. Sila cuba semula.');
+    const {Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType}=window.docx;
+    const pKeys=parseInt(document.getElementById('pilihan-sel').value)===3?['أ','ب','ج']:['أ','ب','ج','د'];
+    const children=[new Paragraph({text:'كلاس كمهيرن القرآن',heading:HeadingLevel.TITLE,alignment:AlignmentType.CENTER}),new Paragraph({text:`Kelas Kemahiran al-Quran (KKQ) — Tingkatan ${selTkn}`,alignment:AlignmentType.CENTER}),new Paragraph({text:''})];
+    let lastTitle='';
+    curQ.forEach(q=>{
+      if(q._tajuk&&q._tajuk!==lastTitle){children.push(new Paragraph({text:q._tajuk,heading:HeadingLevel.HEADING_2}));lastTitle=q._tajuk;}
+      children.push(new Paragraph({children:[new TextRun({text:`${q.no}. `,bold:true}),new TextRun(q.soalan_jawi||'')]}));
+      pKeys.forEach(k=>{if(q.pilihan?.[k])children.push(new Paragraph({text:`${k}. ${q.pilihan[k]}`,indent:{left:360}}));});
+      if(showAns&&q.jawapan)children.push(new Paragraph({text:`Jawapan: ${q.jawapan}`,italics:true}));
+      children.push(new Paragraph({text:''}));
+    });
+    const blob=await Packer.toBlob(new Document({sections:[{children}]}));
+    const url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download=`Exam-KKQ-Tingkatan-${selTkn}.docx`;link.click();URL.revokeObjectURL(url);
+    toast('Fail Word berjaya dimuat turun','green');
+  }catch(e){toast('Ralat: '+e.message,'red');}
+  finally{btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Eksport .docx';}
+}
+
+// ── Print ──────────────────────────────────────────────────────────
+function printQ(){
+  if(!curQ.length)return;
+  const nPil=parseInt(document.getElementById('pilihan-sel').value)||4;
+  const pKeys=nPil===3?['أ','ب','ج']:['أ','ب','ج','د'];
+  const now=new Date().toLocaleDateString('ms-MY',{day:'2-digit',month:'long',year:'numeric'});
+  let body=`<html><head><meta charset="utf-8"><title>KKQ T${selTkn}</title>
+  <style>*{box-sizing:border-box}body{font-family:serif;font-size:13pt;margin:1.8cm;direction:rtl}
+  h1{font-size:17pt;text-align:center}h2{font-size:11pt;text-align:center;color:#555;font-weight:400;margin-bottom:20px}
+  .q{margin-bottom:16px;page-break-inside:avoid}
+  .q-no{font-size:10pt;color:#888;font-family:sans-serif;direction:ltr;margin-bottom:3px}
+  .q-text{font-size:15pt;line-height:1.8;margin-bottom:8px}
+  .opt{margin:3px 0;font-size:13pt}.lbl{direction:ltr;font-family:sans-serif;margin-left:6px;font-size:11pt}
+  .sec{font-size:12pt;font-weight:bold;background:#1B5E9B;color:white;padding:5px 10px;margin:14px 0 8px;direction:ltr}
+  @media print{.sec{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+  </style></head><body>
+  <h1>كلاس كمهيرن القرآن</h1>
+  <h2>Kelas Kemahiran al-Quran (KKQ) — Tingkatan ${selTkn} | ${now} | ${curQ.length} Soalan</h2>`;
+  let lastT='';
+  curQ.forEach(q=>{
+    if(q._tajuk&&q._tajuk!==lastT){body+=`<div class="sec">${q._tajuk}</div>`;lastT=q._tajuk;}
+    body+=`<div class="q"><div class="q-no">Soalan ${q.no}</div><div class="q-text">${q.soalan_jawi||''}</div>`;
+    pKeys.forEach(k=>{if(q.pilihan&&q.pilihan[k])body+=`<div class="opt"><span class="lbl">${k}.</span> ${q.pilihan[k]}</div>`;});
+    body+=`</div>`;
+  });
+  body+=`</body></html>`;
+  const w=window.open('','_blank');w.document.write(body);w.document.close();w.print();
+}
+
+// ── Toast & Error ──────────────────────────────────────────────────
+function toast(msg,type,dur=2800){
+  const t=document.getElementById('toast');
+  t.className='toast'+(type?' '+type:'');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+function showErr(msg){
+  document.getElementById('err-msg').textContent=msg;
+  document.getElementById('err-box').style.display='flex';
+}
+function showInfo(){
+  alert('Kelas Kemahiran al-Quran (KKQ)\nPenjana Soalan Peperiksaan v2.0\n\nPenyedia AI: Claude, Gemini, Qwen dan ChatGPT\n\nCiri-ciri:\n• Jana soalan dalam Tulisan Jawi\n• Tingkatan 1, 2 & 3\n• Sehingga 60 soalan\n• Eksport .docx & cetak\n• Simpan sesi untuk semak semula\n• Boleh pasang sebagai apl');
+}
+
+updateSavedCount();
+</script>
+</body>
+</html>

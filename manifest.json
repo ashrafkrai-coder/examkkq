@@ -1,0 +1,13 @@
+{
+  "name": "Exam KKQ",
+  "short_name": "Exam KKQ",
+  "description": "Penjana soalan peperiksaan Kelas Kemahiran al-Quran",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f7fb",
+  "theme_color": "#243a73",
+  "lang": "ms",
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
