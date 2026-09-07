@@ -34,7 +34,7 @@ async function callGemini({ system, message }) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('Kunci API Gemini belum ditetapkan di pelayan.');
 
-  const res = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+  const res = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ system_instruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: message }] }] }),
