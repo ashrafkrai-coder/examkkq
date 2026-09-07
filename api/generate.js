@@ -16,47 +16,36 @@ async function fetchWithTimeout(url, opts) {
   }
 }
 
-async function callAnthropic({ system, message, file }) {
+async function callAnthropic({ system, message }) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error('Kunci API Claude belum ditetapkan di pelayan.');
-  if (file && file.mediaType !== 'application/pdf') {
-    throw new Error('Fail Word belum disokong untuk Claude. Sila guna sumber Teks atau PDF.');
-  }
-  const content = [{ type: 'text', text: message }];
-  if (file) content.unshift({ type: 'document', source: { type: 'base64', media_type: file.mediaType, data: file.base64 } });
 
   const res = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 8000, system, messages: [{ role: 'user', content }] }),
+    body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 8000, system, messages: [{ role: 'user', content: message }] }),
   });
   const d = await res.json();
   if (!res.ok) throw new Error(d.error?.message || 'Ralat API Claude');
   return (d.content || []).map(c => c.text || '').join('');
 }
 
-async function callGemini({ system, message, file }) {
+async function callGemini({ system, message }) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('Kunci API Gemini belum ditetapkan di pelayan.');
-  if (file && file.mediaType !== 'application/pdf') {
-    throw new Error('Fail Word belum disokong untuk Gemini. Sila guna sumber Teks atau PDF.');
-  }
-  const parts = [{ text: message }];
-  if (file) parts.push({ inline_data: { mime_type: file.mediaType, data: file.base64 } });
 
   const res = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ system_instruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts }] }),
+    body: JSON.stringify({ system_instruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: message }] }] }),
   });
   const d = await res.json();
   if (!res.ok) throw new Error(d.error?.message || 'Ralat API Gemini');
   return (d.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('');
 }
 
-async function callOpenAICompatible({ system, message, file }, { key, url, model, label }) {
+async function callOpenAICompatible({ system, message }, { key, url, model, label }) {
   if (!key) throw new Error(`Kunci API ${label} belum ditetapkan di pelayan.`);
-  if (file) throw new Error(`Muat naik fail tidak disokong untuk ${label}. Sila guna sumber Teks.`);
 
   const res = await fetchWithTimeout(url, {
     method: 'POST',
@@ -66,6 +55,21 @@ async function callOpenAICompatible({ system, message, file }, { key, url, model
   const d = await res.json();
   if (!res.ok) throw new Error(d.error?.message || `Ralat API ${label}`);
   return d.choices?.[0]?.message?.content || '';
+}
+
+async function fetchReferenceContext(tingkatan) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key || !tingkatan) return '';
+  try {
+    const q = `${url}/rest/v1/kkq_reference_chunks?select=content,title,kkq_reference_sources!inner(tingkatan,bidang,is_active)&kkq_reference_sources.tingkatan=eq.${tingkatan}&kkq_reference_sources.is_active=eq.true&limit=15`;
+    const res = await fetch(q, { headers: { apikey: key, authorization: `Bearer ${key}` } });
+    if (!res.ok) return '';
+    const rows = await res.json();
+    return rows.map(r => r.content).filter(Boolean).join('\n\n').slice(0, 12000);
+  } catch {
+    return '';
+  }
 }
 
 const PROVIDERS = {
@@ -91,7 +95,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const { provider, system, message, file } = req.body || {};
+  const { provider, system, message, tingkatan } = req.body || {};
   const impl = PROVIDERS[provider];
   if (!impl) {
     res.status(400).json({ error: { message: 'Penyedia AI tidak sah.' } });
@@ -103,7 +107,11 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const text = await impl({ system: system || '', message, file: file || null });
+    const refCtx = await fetchReferenceContext(tingkatan);
+    const fullMessage = refCtx
+      ? `Rujukan rasmi KKQ (silibus/buku teks) untuk Tingkatan ${tingkatan}:\n${refCtx}\n\nBerdasarkan rujukan di atas, ${message}`
+      : message;
+    const text = await impl({ system: system || '', message: fullMessage });
     res.status(200).json({ text });
   } catch (err) {
     res.status(502).json({ error: { message: err.message || 'Ralat pelayan tidak dijangka.' } });

@@ -348,49 +348,8 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
       <section class="welcome-banner">
         <div class="eyebrow">Exam KKQ · AI Assistant</div>
         <h1>Bina set soalan dengan lebih pantas.</h1>
-        <p>Tampal silibus atau muat naik modul, tetapkan aras dan terus jana soalan Jawi yang sedia disemak.</p>
+        <p>Tetapkan aras dan terus jana soalan Jawi yang sedia disemak.</p>
       </section>
-
-      <!-- Input source -->
-      <div class="card">
-        <div class="card-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Sumber Silibus / Modul
-        </div>
-        <div class="segment" id="src-seg">
-          <button class="seg-btn active" onclick="setSrc('teks')">Teks</button>
-          <button class="seg-btn" onclick="setSrc('pdf')">PDF</button>
-          <button class="seg-btn" onclick="setSrc('word')">Word</button>
-        </div>
-        <div id="src-teks">
-          <label class="field-label">Tampal kandungan silibus</label>
-          <textarea id="teks-in" placeholder="Contoh:&#10;Tajuk 1: Hukum Tajwid&#10;- Nun Sakinah (Izhar, Idgham, Iqlab, Ikhfa)&#10;- Mim Sakinah&#10;&#10;Tajuk 2: Makhraj Huruf..."></textarea>
-        </div>
-        <div id="src-pdf" style="display:none">
-          <div class="upload-zone" id="pdf-zone">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            <p>Ketik atau seret fail PDF</p>
-            <span>Modul atau silibus • maks 3MB</span>
-            <input type="file" accept=".pdf" onchange="handleFile(this,'pdf')">
-          </div>
-          <div class="file-chip" id="pdf-chip" style="display:none">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            <span id="pdf-name"></span>
-          </div>
-        </div>
-        <div id="src-word" style="display:none">
-          <div class="upload-zone">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <p>Ketik atau seret fail Word</p>
-            <span>.docx • maks 3MB</span>
-            <input type="file" accept=".docx,.doc" onchange="handleFile(this,'word')">
-          </div>
-          <div class="file-chip" id="word-chip" style="display:none">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            <span id="word-name"></span>
-          </div>
-        </div>
-      </div>
 
       <!-- Settings -->
       <div class="card">
@@ -593,8 +552,7 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
 
 <script>
 // ── State ──────────────────────────────────────────────────────────
-let curTab='jana', srcMode='teks', selTkn=1, curQ=[], showAns=true;
-let uploadedFiles={pdf:null,word:null};
+let curTab='jana', selTkn=1, curQ=[], showAns=true;
 let settings={jawapan:true,pener:true,tajuk:true,provider:'anthropic'};
 let deferredPrompt=null;
 
@@ -679,14 +637,6 @@ function goTab(t){
   if(t==='tetapan')updateSavedCount();
 }
 
-// ── Input source ───────────────────────────────────────────────────
-function setSrc(m){
-  srcMode=m;
-  ['teks','pdf','word'].forEach((s,i)=>{
-    document.querySelectorAll('#src-seg .seg-btn')[i].classList.toggle('active',s===m);
-    document.getElementById('src-'+s).style.display=s===m?'block':'none';
-  });
-}
 function setTkn(n){
   selTkn=n;
   document.querySelectorAll('#tkn-seg .seg-btn').forEach((b,i)=>b.classList.toggle('active',i+1===n));
@@ -696,21 +646,10 @@ function updBil(v){
   document.getElementById('bil-val').textContent=v;
   document.getElementById('btn-lbl').textContent=v;
 }
-function handleFile(input,type){
-  const f=input.files[0];if(!f)return;
-  if(f.size>3*1024*1024){showErr('Fail melebihi had 3MB. Sila pilih fail yang lebih kecil.');input.value='';return;}
-  uploadedFiles[type]=f;
-  document.getElementById(type+'-chip').style.display='flex';
-  document.getElementById(type+'-name').textContent=f.name+' ('+(f.size/1024).toFixed(1)+' KB)';
-}
-
 // ── API helper ─────────────────────────────────────────────────────
-async function toBase64(file){
-  return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
-}
-async function callAPI(sys,msg,filePkg){
+async function callAPI(sys,msg){
   const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({provider:settings.provider,system:sys,message:msg,file:filePkg?{base64:filePkg.b64,mediaType:filePkg.type,size:filePkg.size}:null})});
+    body:JSON.stringify({provider:settings.provider,system:sys,message:msg,tingkatan:selTkn})});
   const d=await res.json();
   if(!res.ok)throw new Error(d.error?.message||'Ralat API');
   return d.text;
@@ -726,13 +665,6 @@ async function generate(){
   const tahap=document.getElementById('tahap-sel').value;
   const nPil=parseInt(document.getElementById('pilihan-sel').value);
 
-  // Validate input
-  let content='';
-  if(srcMode==='teks'){
-    content=document.getElementById('teks-in').value.trim();
-    if(!content){showErr('Sila masukkan kandungan silibus terlebih dahulu.');return;}
-  } else if(srcMode==='pdf'&&!uploadedFiles.pdf){showErr('Sila muat naik fail PDF.');return;}
-  else if(srcMode==='word'&&!uploadedFiles.word){showErr('Sila muat naik fail Word.');return;}
   if(!navigator.onLine){showErr('Tiada sambungan internet. Sambungkan internet untuk jana soalan.');return;}
 
   document.getElementById('err-box').style.display='none';
@@ -746,11 +678,7 @@ async function generate(){
 Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"...","pilihan":{"أ":"...","ب":"...","ج":"...","د":"..."},"jawapan":"أ","tahap":"mudah","penerangan":"..."}]}`;
 
   try{
-    let filePkg=null;
-    if(srcMode==='pdf'){const b64=await toBase64(uploadedFiles.pdf);filePkg={b64,type:'application/pdf',size:uploadedFiles.pdf.size};}
-    else if(srcMode==='word'){const b64=await toBase64(uploadedFiles.word);filePkg={b64,type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',size:uploadedFiles.word.size};}
-
-    let no=1, batch=20, part=1, firstCall=true;
+    let no=1, batch=20, part=1;
 
     while(no<=total){
       const n=Math.min(batch,total-no+1);
@@ -758,13 +686,10 @@ Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"..
       document.getElementById('prog-msg').innerHTML=`<span class="spin"></span> Jana soalan ${no}–${no+n-1}...`;
       setProg(no-1,total);
 
-      const msg=content
-        ?`Silibus KKQ T${selTkn}:\n\n${content}\n\nJana ${n} soalan Jawi${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. JSON sahaja.`
-        :`Jana ${n} soalan KKQ T${selTkn} dari dokumen${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. Jawi. JSON sahaja.`;
+      const msg=`Jana ${n} soalan KKQ Tingkatan ${selTkn}${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. JSON sahaja.`;
 
       try{
-        const raw=await callAPI(SYS,msg,firstCall?filePkg:null);
-        firstCall=false;
+        const raw=await callAPI(SYS,msg);
         const p=parseJ(raw);
         (p.soalan||[]).forEach((q,i)=>curQ.push({...q,no:no+i,_tajuk:p.tajuk||`Bahagian ${part}`}));
         no+=n; part++; setProg(curQ.length,total);
