@@ -377,6 +377,11 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
           <option value="Tarannum">Tarannum</option>
         </select>
 
+        <label class="field-label" for="tajuk-sel">Tajuk</label>
+        <select id="tajuk-sel" onchange="setTajuk(this.value)" style="margin-bottom:14px" disabled>
+          <option value="">Semua Tajuk</option>
+        </select>
+
         <label class="field-label">Bilangan Soalan: <strong id="bil-lbl" style="color:var(--blue)">60</strong></label>
         <div class="slider-row" style="margin-bottom:14px">
           <input type="range" min="10" max="60" value="60" step="10" oninput="updBil(this.value)">
@@ -557,7 +562,43 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
 
 <script>
 // ── State ──────────────────────────────────────────────────────────
-let curTab='jana', selTkn=1, selBidang='', curQ=[], showAns=true;
+let curTab='jana', selTkn=1, selBidang='', selTajuk='', curQ=[], showAns=true;
+
+const TAJUK_MAP={
+  1:{
+    'Tajwid':["Hukum Nun Sakinah dan Tanwin","Hukum Nun dan Mim Musyaddatain","Hukum Mim Sakinah","Idgham Mutaqaribain","Idgham Mutajanisain","Idgham Mutamasilain","Istilahat Dabt Al-Quran","Isti'azah wa Basmalah wa Surah"],
+    'Hafazan':["Kelebihan dan Adab Menghafaz","Kaedah Menghafaz","Surah As-Sajadah","Surah Al-Insan","Surah Al-A'la","Surah Al-Ghashiah"],
+    'Ulum al-Quran':["Takrif Al-Quran","Takrif Ulum Al-Quran","Nuzul Al-Quran","Pengumpulan Al-Quran","Ayat Pertama dan Terakhir"],
+    'Qiraat':["Pengenalan Qiraat Sab'ah","Tujuh Imam Qiraat","Rawi Setiap Imam","Aplikasi: Al-Fatihah, Al-Ikhlas, Al-Falaq, An-Nas"],
+    'Tarannum':["Pengenalan Suara","Pengenalan Tarannum","Istilah Tarannum","Tarannum Bayyati","Tarannum Husaini"]
+  },
+  2:{
+    'Tajwid':["Mad Asli","Mad Wajib Muttasil","Mad Jaiz Muttasil","Mad Silah Tawilah","Mad 'Aridh Lissukun","Mad Lin","Tajwid Azan wa Iqamah"],
+    'Hafazan':["Surah Al-Waqiah","Surah Nuh"],
+    'Ulum al-Quran':["Sejarah Penulisan Al-Quran","Sejarah Mashaf Al-Imam","Asbabun Nuzul","Ayat Makkiyah dan Madaniyah"],
+    'Qiraat':["Tajwid Al-Qiraat","Aplikasi: Al-Kafirun, An-Nasr, Al-Masad"],
+    'Tarannum':["Tarannum Nahawand","Tarannum Rast"]
+  },
+  3:{
+    'Tajwid':["Mad Badal","Mad 'Iwadh","Mad Silah Qasirah","Mad Tamkin","Mad Tabi'i Harfi","Mad Farqi","Mad Lazim Kalimi","Mad Lazim Harfi"],
+    'Hafazan':["Surah As-Saf","Surah Al-Jumu'ah"],
+    'Ulum al-Quran':["Makna As-Surah","Penamaan Surah","Bilangan Surah","Tertib Surah","Bilangan Ayat"],
+    'Qiraat':["Aplikasi: Al-Fil, Al-Quraisy, Al-Ma'un, Al-Kauthar"],
+    'Tarannum':["Tarannum Hijaz","Tarannum Saba"]
+  },
+  4:{
+    'Tajwid':["Makhraj Huruf","Sifat Huruf","Hukum Ra dan Lam","Memulakan Bacaan Hamzah","Qata' wa Ibtida'","Al-Waqaf","As-Saktah","Iltiqa' As-Sakinain"],
+    'Hafazan':["Surah Yasin","Surah Al-Munafiqun"],
+    'Qiraat':["Aplikasi: At-Takathur, Al-'Asr, Al-Humazah"],
+    'Tarannum':["Tarannum Sikah","Tarannum Jaharkah"]
+  },
+  5:{
+    'Tajwid':["Kaedah Rasm Uthmani","Bacaan Riwayat Hafs","Perbezaan Tariq Al-Jazari dan Asy-Syatibi"],
+    'Hafazan':["Surah Al-Mulk / Al-Munjiah"],
+    'Qiraat':["Aplikasi 9 Surah (Ad-Dhuha hingga Al-Qari'ah) - Riwayat Qalun & Warsy"],
+    'Tarannum':["Aplikasi Gabungan Tarannum (Surah Al-Mulk)","Sullam Nuzul dan Sullam Tulu'","Jawab dan Jawabul Jawab"]
+  }
+};
 let settings={jawapan:true,pener:true,tajuk:true};
 let deferredPrompt=null;
 
@@ -633,9 +674,30 @@ function setTkn(n){
     document.getElementById('bidang-sel').value='';
     selBidang='';
   }
+  refreshTajukOptions();
 }
 function setBidang(b){
   selBidang=b;
+  refreshTajukOptions();
+}
+function setTajuk(t){
+  selTajuk=t;
+}
+function refreshTajukOptions(){
+  const sel=document.getElementById('tajuk-sel');
+  selTajuk='';
+  sel.innerHTML='<option value="">Semua Tajuk</option>';
+  const list=(TAJUK_MAP[selTkn]||{})[selBidang];
+  if(!selBidang||!list){
+    sel.disabled=true;
+    return;
+  }
+  sel.disabled=false;
+  list.forEach(t=>{
+    const opt=document.createElement('option');
+    opt.value=t; opt.textContent=t;
+    sel.appendChild(opt);
+  });
 }
 function updBil(v){
   document.getElementById('bil-lbl').textContent=v;
@@ -683,7 +745,8 @@ Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"..
       setProg(no-1,total);
 
       const bidangTxt=selBidang?` bagi bidang ${selBidang}`:'';
-      const msg=`Jana ${n} soalan KKQ Tingkatan ${selTkn}${bidangTxt}${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. JSON sahaja.`;
+      const tajukTxt=selTajuk?`, tajuk "${selTajuk}"`:'';
+      const msg=`Jana ${n} soalan KKQ Tingkatan ${selTkn}${bidangTxt}${tajukTxt}${lbl}. Tahap: ${tM[tahap]}. Pilihan: ${nPil} (${pL}). No dari ${no}. JSON sahaja.`;
 
       try{
         const raw=await callAPI(SYS,msg);
