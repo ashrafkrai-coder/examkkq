@@ -9,7 +9,7 @@
         "--read-only"
       ],
       "env": {
-        "SUPABASE_ACCESS_TOKEN": "sbp_ecc2••••••••••••••••••••••••••••••••6ad9"
+        "SUPABASE_ACCESS_TOKEN": "sbp_fc367a382ab22d253b3b89701954cab50164cab7"
       }
     }
   }
