@@ -401,6 +401,7 @@ textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shado
           <div>
             <label class="field-label">Bilangan Pilihan</label>
             <select id="pilihan-sel">
+              <option value="2">2 Pilihan</option>
               <option value="3">3 Pilihan</option>
               <option value="4" selected>4 Pilihan</option>
             </select>
@@ -730,10 +731,11 @@ async function generate(){
   document.getElementById('progress-wrap').style.display='block';
   curQ=[];
 
-  const pL=nPil===3?'أ، ب، ج':'أ، ب، ج، د';
+  const pL=['أ','ب','ج','د'].slice(0,nPil).join('، ');
   const tM={mudah:'mudah (asas)',sederhana:'sederhana',sukar:'sukar',campuran:'campuran'};
-  const SYS=`Anda pakar soalan KKQ Tingkatan ${selTkn}. Medan soalan_jawi DAN pilihan MESTI 100% Tulisan Jawi sepenuhnya — JANGAN campurkan sebarang perkataan Rumi/Latin (termasuk istilah teknikal seperti nama hukum tajwid) dalam medan ini; tukar semua istilah kepada ejaan Jawi. Rumi hanya dibenarkan dalam medan soalan_rumi. Pilihan: ${pL}. JSON SAHAJA.
-Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"...","pilihan":{"أ":"...","ب":"...","ج":"...","د":"..."},"jawapan":"أ","tahap":"mudah","penerangan":"..."}]}`;
+  const pilihanFormat=['أ','ب','ج','د'].slice(0,nPil).map(k=>`"${k}":"..."`).join(',');
+  const SYS=`Anda pakar soalan KKQ Tingkatan ${selTkn}. Medan soalan_jawi DAN pilihan MESTI 100% Tulisan Jawi sepenuhnya — JANGAN campurkan sebarang perkataan Rumi/Latin (termasuk istilah teknikal seperti nama hukum tajwid) dalam medan ini; tukar semua istilah kepada ejaan Jawi. Rumi hanya dibenarkan dalam medan soalan_rumi. Setiap soalan MESTI ada tepat ${nPil} pilihan: ${pL}. JSON SAHAJA.
+Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"...","pilihan":{${pilihanFormat}},"jawapan":"أ","tahap":"mudah","penerangan":"..."}]}`;
 
   try{
     let no=1, batch=20, part=1;
@@ -784,7 +786,7 @@ function setProg(done,total){
 // ── Render soalan ──────────────────────────────────────────────────
 function renderSoalan(nPil){
   nPil=nPil||parseInt(document.getElementById('pilihan-sel').value)||4;
-  const pKeys=nPil===3?['أ','ب','ج']:['أ','ب','ج','د'];
+  const pKeys=['أ','ب','ج','د'].slice(0,nPil);
   const tarikh=new Date().toLocaleDateString('ms-MY',{day:'2-digit',month:'long',year:'numeric'});
 
   document.getElementById('soalan-empty').style.display='none';
@@ -894,7 +896,7 @@ async function exportDocx(){
   try{
     if(!window.docx)throw new Error('Komponen Word masih dimuatkan. Sila cuba semula.');
     const {Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType}=window.docx;
-    const pKeys=parseInt(document.getElementById('pilihan-sel').value)===3?['أ','ب','ج']:['أ','ب','ج','د'];
+    const pKeys=['أ','ب','ج','د'].slice(0,parseInt(document.getElementById('pilihan-sel').value)||4);
     const children=[new Paragraph({text:'كلاس كمهيرن القرآن',heading:HeadingLevel.TITLE,alignment:AlignmentType.CENTER}),new Paragraph({text:`Kelas Kemahiran al-Quran (KKQ) — Tingkatan ${selTkn}`,alignment:AlignmentType.CENTER}),new Paragraph({text:''})];
     let lastTitle='';
     curQ.forEach(q=>{
@@ -916,7 +918,7 @@ async function exportDocx(){
 function printQ(){
   if(!curQ.length)return;
   const nPil=parseInt(document.getElementById('pilihan-sel').value)||4;
-  const pKeys=nPil===3?['أ','ب','ج']:['أ','ب','ج','د'];
+  const pKeys=['أ','ب','ج','د'].slice(0,nPil);
   const now=new Date().toLocaleDateString('ms-MY',{day:'2-digit',month:'long',year:'numeric'});
   let body=`<html><head><meta charset="utf-8"><title>KKQ T${selTkn}</title>
   <style>*{box-sizing:border-box}body{font-family:serif;font-size:13pt;margin:1.8cm;direction:rtl}
