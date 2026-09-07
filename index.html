@@ -196,22 +196,87 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
   .app-shell{border-radius:16px;margin:20px auto;height:calc(100dvh - 40px);max-height:860px}
 }
 
-/* ── Visual refresh ── */
-:root{--blue:#243A73;--blue-md:#36559E;--blue-lt:#E8EDFF;--green:#13795B;--amber:#A35C0A;--text:#172033;--text2:#667085;--gray-md:#E4E7EC;--gray-lt:#F7F8FC;--radius:16px}
-html,body{background:#EEF1FA}
-.app-shell{background:#F9FAFF;box-shadow:0 22px 70px rgba(31,48,105,.16)}
-.topbar{background:linear-gradient(135deg,#172A58,#375AAB)}
-.topbar-inner{padding:16px 18px}.topbar-logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#F6C55F,#E58A38);box-shadow:0 6px 18px rgba(0,0,0,.18)}
-.topbar-title strong{font-size:15px}.topbar-title span{font-size:11px}.icon-btn{border-radius:12px}
-.tab-nav{margin:0 12px;border:1px solid #E7EAF4;border-radius:0 0 16px 16px;box-shadow:0 4px 12px rgba(28,44,92,.05)}
-.tab-item{padding:11px 4px 9px;border-bottom:2px solid transparent}.tab-item.active{color:var(--blue);border-bottom-color:#F2A23A}
-.page{padding:18px}.card{border:1px solid #E7EAF4;border-radius:18px;padding:16px;box-shadow:0 8px 22px rgba(29,45,92,.055);margin-bottom:14px}
-.card-title{font-size:14px}.segment{padding:4px;border-radius:12px;background:#F2F4FA}.seg-btn{border-radius:9px;padding:9px 5px}.seg-btn.active{color:var(--blue);box-shadow:0 3px 10px rgba(39,58,115,.12)}
-textarea,select,input[type=text]{border-color:#E0E5F1;border-radius:12px;padding:12px;background:#FCFCFF}.upload-zone{border-radius:14px;background:#FAFBFF;border-color:#CDD6F0}
-.gen-btn{border-radius:16px;padding:16px;background:linear-gradient(135deg,#243A73,#4268C4);box-shadow:0 12px 22px rgba(43,72,157,.25)}
-.welcome-banner{padding:18px;border-radius:18px;color:#fff;background:radial-gradient(circle at 92% 12%,rgba(245,190,83,.75),transparent 24%),linear-gradient(135deg,#243A73,#4268C4);margin-bottom:14px;box-shadow:0 10px 24px rgba(36,58,115,.18)}
-.welcome-banner .eyebrow{font-size:11px;letter-spacing:.1em;font-weight:700;text-transform:uppercase;color:#F7CF78}.welcome-banner h1{font-size:20px;margin:5px 0 6px;line-height:1.2}.welcome-banner p{font-size:12px;line-height:1.55;color:#E7ECFF}.q-card,.saved-item{border-color:#E6E9F2;border-radius:16px;box-shadow:0 5px 15px rgba(35,50,92,.04)}
-.section-hd{border-radius:12px;background:linear-gradient(135deg,#243A73,#4268C4)}.act-btn{border-radius:10px}.act-btn.primary{background:var(--blue);border-color:var(--blue)}
+/* ── Islamic Premium Theme ── */
+:root{
+  --emerald:#064E3B; --emerald-md:#0B6E4F; --emerald-lt:#E6F2EC;
+  --gold:#C9A24B; --gold-lt:#F7EFD9; --gold-dk:#9C7A2E;
+  --blue:#064E3B; --blue-md:#0B6E4F; --blue-lt:#E6F2EC;
+  --green:#0B6E4F; --amber:#9C7A2E;
+  --text:#1B221E; --text2:#5B6A62;
+  --gray-md:#E2E8E3; --gray-lt:#F6F8F5;
+  --radius:14px;
+  --paper:#FCFBF6;
+}
+html,body{background:#EDEFE7;font-size:14px}
+.app-shell{background:var(--paper);box-shadow:0 22px 70px rgba(6,40,30,.18)}
+
+/* Topbar with Islamic geometric motif */
+.topbar{
+  background:
+    linear-gradient(135deg,#053B2D,#0B6E4F 60%,#0E7D59);
+  position:relative;overflow:hidden;
+}
+.topbar::before{
+  content:'';position:absolute;inset:0;opacity:.16;pointer-events:none;
+  background-image:
+    radial-gradient(circle at 10% 30%, transparent 0 6px, rgba(255,255,255,.5) 6px 7px, transparent 7px),
+    radial-gradient(circle at 30% 70%, transparent 0 6px, rgba(255,255,255,.5) 6px 7px, transparent 7px),
+    radial-gradient(circle at 50% 20%, transparent 0 6px, rgba(255,255,255,.5) 6px 7px, transparent 7px),
+    radial-gradient(circle at 70% 60%, transparent 0 6px, rgba(255,255,255,.5) 6px 7px, transparent 7px),
+    radial-gradient(circle at 90% 30%, transparent 0 6px, rgba(255,255,255,.5) 6px 7px, transparent 7px);
+  background-size:120px 120px;
+}
+.topbar::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.topbar-inner{padding:12px 16px;position:relative}
+.topbar-logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(145deg,var(--gold),#A6813A);box-shadow:0 6px 16px rgba(0,0,0,.22);color:#12291F}
+.topbar-title strong{font-size:14.5px;letter-spacing:.2px}.topbar-title span{font-size:10.5px;color:rgba(255,235,190,.85)}.icon-btn{border-radius:11px}
+
+.tab-nav{margin:0 10px;border:1px solid var(--gray-md);border-radius:0 0 14px 14px;box-shadow:0 4px 12px rgba(6,40,30,.05);flex-shrink:0}
+.tab-item{padding:8px 4px 7px;border-bottom:2px solid transparent;color:var(--text2)}
+.tab-item.active{color:var(--emerald);border-bottom-color:var(--gold)}
+.tab-item svg{stroke:currentColor}
+
+.page{padding:12px}
+.card{border:1px solid var(--gray-md);border-radius:14px;padding:12px;box-shadow:0 6px 16px rgba(6,40,30,.05);margin-bottom:10px;background:#fff}
+.card-title{font-size:12.5px;color:var(--emerald)}
+.card-title svg{color:var(--gold-dk)}
+.segment{padding:3px;border-radius:10px;background:var(--gray-lt);margin-bottom:9px}
+.seg-btn{border-radius:8px;padding:6px 5px;font-size:11.5px}
+.seg-btn.active{color:var(--emerald);box-shadow:0 3px 8px rgba(6,78,59,.14);font-weight:600}
+
+label.field-label{font-size:11px;margin-bottom:4px}
+textarea,select,input[type=text]{border-color:var(--gray-md);border-radius:10px;padding:9px 11px;background:var(--paper);font-size:13px}
+textarea{min-height:64px}
+textarea:focus,select:focus,input:focus{border-color:var(--emerald-md);box-shadow:0 0 0 3px rgba(11,110,79,.1)}
+.upload-zone{border-radius:12px;background:var(--gray-lt);border-color:#D6DED6;padding:14px 12px}
+.upload-zone svg{width:22px;height:22px}
+
+.gen-btn{border-radius:14px;padding:12px;background:linear-gradient(135deg,#064E3B,#0E7D59);box-shadow:0 10px 20px rgba(6,78,59,.28);font-size:14px;position:relative;overflow:hidden}
+.gen-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transform:translateX(-100%)}
+
+.welcome-banner{display:none}
+
+.q-card,.saved-item{border-color:var(--gray-md);border-radius:14px;box-shadow:0 5px 14px rgba(6,40,30,.045)}
+.section-hd{border-radius:10px;background:linear-gradient(135deg,#064E3B,#0E7D59)}
+.act-btn{border-radius:9px;font-size:11.5px}
+.act-btn.primary{background:var(--emerald);border-color:var(--emerald)}
+
+.opt.correct{background:var(--gold-lt);border-color:#E3CE8C}
+.opt.correct .opt-key{color:var(--gold-dk)}
+.pener{background:var(--emerald-lt);color:var(--emerald-md)}
+.badge-m{background:var(--emerald-lt);color:var(--emerald-md)}
+.badge-s{background:var(--gold-lt);color:var(--gold-dk)}
+
+.toggle.on{background:var(--emerald-md)}
+
+/* ── Fit Jana page without scroll on typical screens ── */
+@media(min-height:700px){
+  #page-jana{overflow-y:hidden}
+}
+.card+.card{margin-top:0}
+#page-jana .card{padding:11px}
+#page-jana .gen-btn{margin-top:10px}
+#page-jana #progress-wrap{padding:14px 8px}
 </style>
 </head>
 <body>
