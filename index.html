@@ -727,7 +727,10 @@ async function generate(){
   if(!navigator.onLine){showErr('Tiada sambungan internet. Sambungkan internet untuk jana soalan.');return;}
 
   document.getElementById('err-box').style.display='none';
-  document.getElementById('gen-btn').disabled=true;
+  const genBtn=document.getElementById('gen-btn');
+  const genBtnOrig=genBtn.innerHTML;
+  genBtn.disabled=true;
+  genBtn.innerHTML='<span class="spin" style="border-color:rgba(255,255,255,0.4);border-top-color:#fff"></span> Menjana...';
   document.getElementById('progress-wrap').style.display='block';
   curQ=[];
 
@@ -769,12 +772,20 @@ Format: {"tajuk":"Tajuk","soalan":[{"no":1,"soalan_jawi":"...","soalan_rumi":"..
     renderSoalan(nPil);
     goTab('soalan');
     toast(`${curQ.length} soalan berjaya dijana!`,'green');
+    cacheGenerated(curQ);
 
   }catch(err){showErr('Ralat: '+err.message);}
   finally{
-    document.getElementById('gen-btn').disabled=false;
+    genBtn.disabled=false;
+    genBtn.innerHTML=genBtnOrig;
     document.getElementById('progress-wrap').style.display='none';
   }
+}
+
+function cacheGenerated(soalan){
+  fetch('/api/save-questions',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({tingkatan:selTkn,bidang:selBidang||null,tajuk:selTajuk||null,soalan})}
+  ).catch(()=>{});
 }
 
 function setProg(done,total){
